@@ -1,4 +1,4 @@
-import 'package:lib_extent/Textent.dart';
+import 'package:textent/textent.dart';
 
 main() {
 
