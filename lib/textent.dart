@@ -13,7 +13,7 @@ class Textent {
   static bool isTextElementRegistered = false;
 
   // Cache of sizes of previously measured texts given various CSS font properties. TODO: support clearing cache and/or individual entries
-  static final Map<String /*CSS font property*/, Map<String /* text to measure */, TextSize>> _cache = new Map<String, Map<String, TextSize>>();
+  static final Map<String /* CSS styles */, Map<String /* text to measure */, TextSize>> _cache = new Map<String, Map<String, TextSize>>();
 
   /**
    * Register text element if not already done
@@ -78,9 +78,8 @@ class Textent {
     _getTextElement(text, cssFontProperty).attach().then((TextElement elementAddedToDom) {
 
       // Caculate text size excluding any padding, margin, border
-      Rectangle clientRect = elementAddedToDom.getBoundingClientRect();
-      num width = clientRect.width;
-      num height = clientRect.height;
+      num width = elementAddedToDom.offsetWidth;
+      num height = elementAddedToDom.offsetHeight;
 
       // Create Dimension capturing dimensions
       TextSize textSize = new TextSize(width.toDouble(), height.toDouble());
@@ -115,7 +114,7 @@ class Textent {
     // Define completer used to generate future
     var completer;
 
-    // Ensure text elementy is registered
+    // Ensure custom text element is registered
     _registerTextElement();
 
     // Measure texts whose sizes are not yet cached
