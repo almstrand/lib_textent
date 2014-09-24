@@ -2,7 +2,7 @@ name: textent
 version: 0.0.2
 author: Cristian Almstrand <cristian.almstrand@gmail.com>
 homepage: https://github.com/almstrand/lib_textent
-description: Simple Dart library to determine the size of HTML texts to be rendered in the DOM.
+description: Library to pre-determine the size of HTML texts to be rendered in the DOM.
 environment:
   sdk: '>=0.8.10+6 <2.0.0'
 dev_dependencies:
