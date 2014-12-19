@@ -28,39 +28,43 @@ class Textent {
   /**
    * Create text element with specified CSS font attributes and text
    */
-  static TextElement _getTextElement(String text, String font) {
-    TextElement textElement = document.createElement("lib-extent-text-element");
+  static TextElement _getTextElement(String text, String font, String maxWidth) {
+    TextElement textElement = new Element.tag('lib-extent-text-element');
     textElement.text = text;
     textElement.style.font = font;
     return textElement;
   }
 
   /**
-   * Get cache containing sizes of texts given specified CSS font property value.
+   * Get cache containing sizes of texts given specified CSS font and max-width property values.
    */
-  static Map<String, TextSize> _getCache(String cssFontProperty) {
-    Map<String, TextSize> cache = _cache[cssFontProperty];
+  static Map<String, TextSize> _getCache(String cssFontProperty, String cssMaxWidthProperty) {
+    String key = "font:$cssFontProperty;${(cssMaxWidthProperty == null ? "" : "max-width:$cssMaxWidthProperty")}";
+    Map<String, TextSize> cache = _cache[key];
     if (cache == null) {
       cache = new Map<String, TextSize>();
-      _cache[cssFontProperty] = cache;
+      _cache[key] = cache;
     }
     return cache;
   }
 
   /**
-   * Measure specified [text] with specified CSS font property [cssFontProperty].
+   * Measure specified [text] with specified CSS font property [cssFontProperty]. The optional [cssMaxWidthProperty]
+   * parameter can be used to specify the CSS width property of a containing element such that the text will wrap if
+   * extending beyond the specified width.
    *
    * For example:
    *
-   *     Textent.measureText("Measure me", "15px arial,sans-serif").then((TextSize textSize) {
+   *     Textent.measureText("Measure me", "15px arial,sans-serif", cssMaxWidthProperty: "100px")
+   *     .then((TextSize textSize) {
    *       print("My size is $textSize");
    *     });
    *
    */
-  static Future<TextSize> measureText(String text, String cssFontProperty) {
+  static Future<TextSize> measureText(String text, String cssFontProperty, {String cssMaxWidthProperty: null}) {
 
     // Reference, or create if non-existent, cache relevant to specified CSS font property
-    Map<String, TextSize> cache = _getCache(cssFontProperty);
+    Map<String, TextSize> cache = _getCache(cssFontProperty, cssMaxWidthProperty);
 
     // Return cached value if available
     TextSize cachedValue = cache[text];
@@ -68,16 +72,29 @@ class Textent {
       return new Future<TextSize>.value(cachedValue);
     }
 
-    // Define completer used to generate future
-    var completer = new Completer<TextSize>();
+    // Completer used to generate future
+    Completer<TextSize> completer = new Completer<TextSize>();
 
-    // Ensure text elementy is registered
+    // Ensure text element is registered
     _registerTextElement();
 
-    // Add text element to DOM and wait for it to be added to DOM
-    _getTextElement(text, cssFontProperty).attach().then((TextElement elementAddedToDom) {
+    // Create container div if max width is specified
+    Element containerElement;
+    if (cssMaxWidthProperty == null) {
+      containerElement = document.body;
+    }
+    else {
+      containerElement = new DivElement();
+      containerElement.style
+        ..position = "absolute"
+        ..width = cssMaxWidthProperty;
+      document.body.append(containerElement);
+    }
 
-      // Caculate text size excluding any padding, margin, border
+    // Add text element to DOM and wait for it to be added to DOM
+    _getTextElement(text, cssFontProperty, cssMaxWidthProperty).attach(containerElement).then((TextElement elementAddedToDom) {
+
+      // Calculate text size excluding any padding, margin, border
       num width = elementAddedToDom.offsetWidth;
       num height = elementAddedToDom.offsetHeight;
 
@@ -97,22 +114,25 @@ class Textent {
   }
 
   /**
-   * Measure specified set of [texts] with specified CSS font property [cssFontProperty].
+   * Measure specified set of [texts] with specified CSS font property [cssFontProperty]. The optional
+   * [cssMaxWidthProperty] parameter can be used to specify the CSS width property of a containing element such that the
+   * text will wrap if extending beyond the specified width.
    *
    * For example:
    *
-   *     Textent.measureTexts(["Measure me", "Me too!"], "15px arial,sans-serif").then((Map<String, TextSize> textSizes) {
+   *     Textent.measureTexts(["Measure me", "Me too!"], "15px arial,sans-serif", cssMaxWidthProperty: "100px")
+   *     .then((Map<String, TextSize> textSizes) {
    *       print("Our sizes are $textSizes");
    *     });
    *
    */
-  static Future<Map<String, TextSize>> measureTexts(List<String> texts, String cssFontProperty) {
+  static Future<Map<String, TextSize>> measureTexts(List<String> texts, String cssFontProperty, {String cssMaxWidthProperty: null}) {
 
     // Reference, or create if non-existent, cache relevant to specified CSS font property
-    Map<String, TextSize> cache = _getCache(cssFontProperty);
+    Map<String, TextSize> cache = _getCache(cssFontProperty, cssMaxWidthProperty);
 
-    // Define completer used to generate future
-    var completer;
+    // Completer used to generate future
+    Completer<Map<String, TextSize>> completer;
 
     // Ensure custom text element is registered
     _registerTextElement();
@@ -133,10 +153,23 @@ class Textent {
         numMeasurementsPending++;
         numTotalMeasurementsPending++;
 
-        // Add text element to DOM and wait for it to be added to DOM
-        _getTextElement(text, cssFontProperty).attach().then((TextElement elementAddedToDom) {
+        // Create container div if max width is specified
+        Element containerElement;
+        if (cssMaxWidthProperty == null) {
+          containerElement = document.body;
+        }
+        else {
+          containerElement = new DivElement();
+          containerElement.style
+            ..position = "absolute"
+            ..width = cssMaxWidthProperty;
+          document.body.append(containerElement);
+        }
 
-          // Caculate text size excluding any padding, margin, border
+        // Add text element to DOM and wait for it to be added to DOM
+        _getTextElement(text, cssFontProperty, cssMaxWidthProperty).attach(containerElement).then((TextElement elementAddedToDom) {
+
+          // Calculate text size excluding any padding, margin, border
           Rectangle clientRect = elementAddedToDom.getBoundingClientRect();
           num width = clientRect.width;
           num height = clientRect.height;

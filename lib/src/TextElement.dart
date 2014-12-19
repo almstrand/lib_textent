@@ -7,8 +7,9 @@ class TextElement extends HtmlElement {
   Completer<TextElement> _completer;
 
   TextElement.created() : super.created() {
-    style.position = "absolute";
-    style.visibility = "hidden";
+    style
+      ..visibility = "hidden"
+      ..display = "inline";
   }
 
   void attached() {
@@ -19,9 +20,9 @@ class TextElement extends HtmlElement {
   /**
    * Attach element to DOM and return future referencing element once attached
    */
-  Future<TextElement> attach() {
+  Future<TextElement> attach(Element parentElement) {
     _completer = new Completer<TextElement>();
-    document.body.append(this);
+    parentElement.children.add(this);
     return _completer.future;
   }
 }
