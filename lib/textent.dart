@@ -108,7 +108,12 @@ class Textent {
       completer.complete(textSize);
 
       // Remove element from DOM
-      elementAddedToDom.remove();
+      if (cssMaxWidthProperty == null) {
+        elementAddedToDom.remove();
+      }
+      else {
+        containerElement.remove();
+      }
     });
     return completer.future;
   }
@@ -181,7 +186,12 @@ class Textent {
           cache[text] = textSize;
 
           // Remove element from DOM
-          elementAddedToDom.remove();
+          if (cssMaxWidthProperty == null) {
+            elementAddedToDom.remove();
+          }
+          else {
+            containerElement.remove();
+          }
 
           // Complete future if no more pending measurements
           if (--numMeasurementsPending == 0) {

@@ -1,5 +1,5 @@
 name: textent
-version: 0.0.4
+version: 0.0.4+1
 author: Cristian Almstrand <cristian.almstrand@gmail.com>
 homepage: https://github.com/almstrand/lib_textent
 description: Library to pre-determine the size of HTML texts to be rendered in the DOM.
